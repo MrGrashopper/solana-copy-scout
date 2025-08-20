@@ -1,12 +1,10 @@
-// src/app/runs/[runId]/page.tsx
 import RunPageClient from "./RunPageClient";
 
-export default async function RunPage({
+export default async function Page({
   params,
 }: {
   params: Promise<{ runId: string }>;
 }) {
-  const { runId } = await params; // Promise entpacken
-
+  const { runId } = await params;
   return <RunPageClient runId={runId} />;
 }

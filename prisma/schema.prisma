@@ -37,10 +37,7 @@ model TraderSnapshot {
   score         Int
   flags         String?
   createdAt     DateTime     @default(now())
-
-  // NEU:
-  pnlSol        Float        @default(0)
-
+  pnlSol        Float?        @default(0)
   @@index([runId])
   @@index([score])
 }

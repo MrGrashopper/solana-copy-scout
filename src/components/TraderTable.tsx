@@ -1,80 +1,50 @@
+// src/components/TraderTable.tsx
 "use client";
-import { useState } from "react";
-import type { TraderRow } from "@/types/trader";
 
-export function TraderTable({ data }: { data: TraderRow[] }) {
-  const [q, setQ] = useState("");
-  const rows = data.filter((r) =>
-    r.address.toLowerCase().includes(q.toLowerCase())
-  );
+type Row = {
+  id: string;
+  address: string;
+  score: number;
+  pnlSol?: number;
+  trades: number;
+  uniqueTokens: number;
+  flags?: string | null;
+};
+
+export default function TraderTable({ items }: { items: Row[] }) {
+  if (!items?.length)
+    return (
+      <div className="text-sm text-gray-500">
+        Keine Ergebnisse für diesen Run.
+      </div>
+    );
 
   return (
-    <div className="space-y-2">
-      <input
-        placeholder="Adresse filtern…"
-        className="border rounded-md px-2 py-1 text-sm"
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-      />
-      <div className="overflow-auto rounded-xl border">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50">
-            <tr>
-              {[
-                "Score",
-                "Adresse",
-                "ROI",
-                "PnL $",
-                "PnL SOL", // <- NEU hier
-                "Win%",
-                "PF",
-                "Sharpe",
-                "Trades",
-                "Tokens",
-                "LowCap%",
-                "Flags",
-              ].map((h) => (
-                <th key={h} className="text-left p-2">
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r, i) => (
-              <tr key={i} className="border-t hover:bg-gray-50">
-                <td className="p-2 font-semibold">{r.score}</td>
-                <td className="p-2">
-                  <button
-                    onClick={() => navigator.clipboard.writeText(r.address)}
-                    className="underline"
-                    title="Adresse kopieren"
-                  >
-                    {r.address.slice(0, 6)}…{r.address.slice(-6)}
-                  </button>
-                </td>
-                <td className="p-2">{(r.roi * 100).toFixed(1)}%</td>
-                <td className="p-2">{r.pnlUsd.toFixed(0)}</td>
-                {/* NEU: PnL SOL schön formatiert */}
-                <td className="p-2">
-                  {typeof r.pnlSol === "number" ? r.pnlSol.toFixed(4) : "–"}
-                </td>
-                <td className="p-2">{(r.winrate * 100).toFixed(0)}%</td>
-                <td className="p-2">{r.profitFactor.toFixed(2)}</td>
-                <td className="p-2">{r.sharpe.toFixed(2)}</td>
-                <td className="p-2">{r.trades}</td>
-                <td className="p-2">{r.uniqueTokens}</td>
-                <td className="p-2">{(r.lowCapShare * 100).toFixed(0)}%</td>
-                <td className="p-2">
-                  {Array.isArray(r.flags)
-                    ? r.flags.join(", ")
-                    : (r as any).flags ?? ""}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <table className="table-auto border-collapse border border-gray-300 w-full">
+      <thead>
+        <tr>
+          <th className="border px-2 py-1 text-right">Score</th>
+          <th className="border px-2 py-1">Adresse</th>
+          <th className="border px-2 py-1 text-right">PnL (SOL)</th>
+          <th className="border px-2 py-1 text-right">Trades</th>
+          <th className="border px-2 py-1 text-right">Tokens</th>
+          <th className="border px-2 py-1">Flags</th>
+        </tr>
+      </thead>
+      <tbody>
+        {items.map((s) => (
+          <tr key={s.id}>
+            <td className="border px-2 py-1 text-right">{s.score}</td>
+            <td className="border px-2 py-1 font-mono text-xs">{s.address}</td>
+            <td className="border px-2 py-1 text-right">
+              {(s.pnlSol ?? 0).toFixed(4)}
+            </td>
+            <td className="border px-2 py-1 text-right">{s.trades}</td>
+            <td className="border px-2 py-1 text-right">{s.uniqueTokens}</td>
+            <td className="border px-2 py-1">{s.flags ?? ""}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
