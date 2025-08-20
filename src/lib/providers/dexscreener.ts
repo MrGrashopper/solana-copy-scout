@@ -1,32 +1,34 @@
-// Minimaler Wrapper für DEXScreener (public)
 export type DexPair = {
   chainId: string;
   pairAddress: string;
-  url?: string;
-  baseToken: { address: string; symbol?: string; name?: string };
-  quoteToken: { address: string; symbol?: string; name?: string };
-  priceUsd?: string;
+  base: { address: string; symbol: string; name: string };
+  quote: { address: string; symbol: string; name: string };
+  liquidityUsd?: number;
   liquidity?: { usd?: number };
   fdv?: number;
-  marketCap?: number;
-  pairCreatedAt?: number; // ms
+  pairCreatedAt?: number; // ms epoch
 };
 
-const BASE = "https://api.dexscreener.com";
+// Holt die besten Pairs zu einem Mint (Solana)
+export async function getPairsForMint(mint: string): Promise<DexPair[]> {
+  const url = `https://api.dexscreener.com/latest/dex/tokens/${mint}`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) return [];
+  const json = await res.json();
+  return (json?.pairs ?? []).filter((p: any) => p.chainId === "solana");
+}
 
-// Holt alle Pairs für einen Token auf einer Chain (z. B. solana)
-export async function getPairsByToken(
-  chain: string,
-  tokenAddress: string
-): Promise<DexPair[]> {
-  const res = await fetch(`${BASE}/token-pairs/v1/${chain}/${tokenAddress}`, {
-    // kein caching, wir wollen frische Daten beim Debug
-    cache: "no-store",
-    // bei Next 15: notfalls revalidate auf 0
-    next: { revalidate: 0 },
-  });
-  if (!res.ok) {
-    throw new Error(`DEXScreener ${res.status} ${res.statusText}`);
-  }
-  return (await res.json()) as DexPair[];
+// Nimmt das "beste" Pair (höchste liquidityUsd) als Repräsentant
+export async function getBestPairMeta(mint: string) {
+  const pairs = await getPairsForMint(mint);
+  if (!pairs.length) return null;
+  const best = pairs
+    .map((p) => ({
+      mint,
+      liquidityUsd: Number(p.liquidity?.usd ?? p.liquidityUsd ?? 0),
+      fdv: Number(p.fdv ?? 0),
+      pairCreatedAt: p.pairCreatedAt ? Number(p.pairCreatedAt) : undefined,
+    }))
+    .sort((a, b) => (b.liquidityUsd || 0) - (a.liquidityUsd || 0))[0];
+  return best;
 }

@@ -1,5 +1,3 @@
-// Robuster Helius-Wrapper mit GET->POST Fallback und Adress-Validierung
-
 const BASE = "https://api.helius.xyz/v0";
 
 // sehr einfache Solana-Address-Validierung (Base58, 32–44 Zeichen)
@@ -9,10 +7,19 @@ function isPlausibleSolAddress(addr: string) {
   return a.length >= 32 && a.length <= 44 && BASE58.test(a);
 }
 
+export type NativeTransfer = {
+  amount?: number; // lamports
+  fromUserAccount?: string;
+  toUserAccount?: string;
+};
+
 export type EnhancedTx = {
   signature: string;
   timestamp: number; // unix sec
   type: string; // "SWAP" | ...
+  fee?: number; // lamports
+  feePayer?: string;
+  nativeTransfers?: NativeTransfer[];
   events?: {
     swap?: Array<{
       tokenTransfers?: Array<{

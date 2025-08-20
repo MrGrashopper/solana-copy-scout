@@ -25,6 +25,7 @@ export function TraderTable({ data }: { data: TraderRow[] }) {
                 "Adresse",
                 "ROI",
                 "PnL $",
+                "PnL SOL", // <- NEU hier
                 "Win%",
                 "PF",
                 "Sharpe",
@@ -54,13 +55,21 @@ export function TraderTable({ data }: { data: TraderRow[] }) {
                 </td>
                 <td className="p-2">{(r.roi * 100).toFixed(1)}%</td>
                 <td className="p-2">{r.pnlUsd.toFixed(0)}</td>
+                {/* NEU: PnL SOL schön formatiert */}
+                <td className="p-2">
+                  {typeof r.pnlSol === "number" ? r.pnlSol.toFixed(4) : "–"}
+                </td>
                 <td className="p-2">{(r.winrate * 100).toFixed(0)}%</td>
                 <td className="p-2">{r.profitFactor.toFixed(2)}</td>
                 <td className="p-2">{r.sharpe.toFixed(2)}</td>
                 <td className="p-2">{r.trades}</td>
                 <td className="p-2">{r.uniqueTokens}</td>
                 <td className="p-2">{(r.lowCapShare * 100).toFixed(0)}%</td>
-                <td className="p-2">{r.flags?.join(", ")}</td>
+                <td className="p-2">
+                  {Array.isArray(r.flags)
+                    ? r.flags.join(", ")
+                    : (r as any).flags ?? ""}
+                </td>
               </tr>
             ))}
           </tbody>

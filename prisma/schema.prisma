@@ -35,8 +35,11 @@ model TraderSnapshot {
   medianHoldH   Float
   lowCapShare   Float
   score         Int
-  flags         String?      // JSON-String oder CSV
+  flags         String?
   createdAt     DateTime     @default(now())
+
+  // NEU:
+  pnlSol        Float        @default(0)
 
   @@index([runId])
   @@index([score])
