@@ -1,22 +1,24 @@
 "use client";
 import { useState } from "react";
-import { TraderTable } from "@/components/TraderTable";
-import type { TraderRow } from "@/types/trader";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function ClientPage() {
-  const [items, setItems] = useState<TraderRow[]>([]);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
-  async function refresh() {
+  async function runPipeline() {
     setLoading(true);
     try {
-      const res = await fetch("/api/traders", {
-        method: "POST",
-        body: JSON.stringify({}),
-      });
+      const res = await fetch("/api/pipeline/run", { method: "POST" });
+
+      if (!res.ok) {
+        // Optional: Fehlertext auslesen
+        const text = await res.text();
+        console.error("Pipeline API error:", res.status, text);
+        return;
+      }
       const json = await res.json();
-      setItems(json.items ?? []);
+      if (json?.ok && json.runId) router.push(`/runs/${json.runId}`);
     } finally {
       setLoading(false);
     }
@@ -26,22 +28,22 @@ export default function ClientPage() {
     <main className="min-h-dvh mx-auto max-w-6xl p-6 space-y-4">
       <h1 className="text-2xl font-bold">Solana Copy‑Scout (MVP)</h1>
       <p className="text-sm text-muted-foreground">
-        Discovery & Ranking (Stub‑Daten). „Aktualisieren“ lädt Liste.
+        Discovery & Ranking (Fake‑Metriken, echte Persistenz).
       </p>
 
-      <button
-        onClick={refresh}
-        disabled={loading}
-        className="rounded-lg px-4 py-2 bg-black text-white disabled:opacity-60"
-      >
-        {loading ? "Lädt…" : "Aktualisieren"}
-      </button>
-      <p className="text-sm">
-        <Link href="/traders" className="underline">
-          Zu den gespeicherten Tradern →
-        </Link>
-      </p>
-      <TraderTable data={items} />
+      <div className="flex gap-2">
+        <button
+          onClick={runPipeline}
+          disabled={loading}
+          className="rounded-lg px-4 py-2 bg-black text-white disabled:opacity-60"
+        >
+          {loading ? "Scan läuft…" : "Scan starten"}
+        </button>
+
+        <a href="/traders" className="rounded-lg px-4 py-2 border">
+          Zu gespeicherten Tradern
+        </a>
+      </div>
     </main>
   );
 }
