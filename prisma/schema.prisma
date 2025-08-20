@@ -9,6 +9,35 @@ datasource db {
 }
 
 model DiscoveryRun {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  createdAt  DateTime @default(now())
+  windowDays Int      @default(30)
+  minLiq     Int      @default(100000)
+  minFdv     Int      @default(10000000)
+  minPairAge Int      @default(7)
+  minTrades  Int      @default(20)
+  minTokens  Int      @default(3)
+  snapshots  TraderSnapshot[]
+}
+
+model TraderSnapshot {
+  id            String       @id @default(cuid())
+  runId         String
+  run           DiscoveryRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  address       String
+  pnlUsd        Float
+  roi           Float
+  winrate       Float
+  profitFactor  Float
+  sharpe        Float
+  trades        Int
+  uniqueTokens  Int
+  medianHoldH   Float
+  lowCapShare   Float
+  score         Int
+  flags         String?      // JSON-String oder CSV
+  createdAt     DateTime     @default(now())
+
+  @@index([runId])
+  @@index([score])
 }

@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { TraderTable } from "@/components/TraderTable";
 import type { TraderRow } from "@/types/trader";
+import Link from "next/link";
 
 export default function ClientPage() {
   const [items, setItems] = useState<TraderRow[]>([]);
@@ -35,7 +36,11 @@ export default function ClientPage() {
       >
         {loading ? "Lädt…" : "Aktualisieren"}
       </button>
-
+      <p className="text-sm">
+        <Link href="/traders" className="underline">
+          Zu den gespeicherten Tradern →
+        </Link>
+      </p>
       <TraderTable data={items} />
     </main>
   );

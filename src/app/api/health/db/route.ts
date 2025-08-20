@@ -1,18 +1,17 @@
+// src/app/api/health/db/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
 export async function GET() {
   try {
-    // einfacher Ping
     await prisma.$queryRaw`SELECT 1`;
-
-    // optional: kleine Statistik
     const runs = await prisma.discoveryRun.count();
-
+    const snaps = await prisma.traderSnapshot.count();
     return NextResponse.json({
       ok: true,
       db: "sqlite",
       runs,
+      snapshots: snaps,
       ts: new Date().toISOString(),
     });
   } catch (e) {
